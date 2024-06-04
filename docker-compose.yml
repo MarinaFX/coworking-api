@@ -1,0 +1,40 @@
+version: '1.1'
+
+services:
+  api:
+    build: .
+    image: ${API_IMAGE}:${API_IMAGE_VERSION}
+    restart: ${DOCKER_CONTAINER_BEHAVIOUR}
+    environment:
+      - spring.datasource.url=jdbc:mysql://mysql:${DATABASE_EXTERNAL_PORT}/${DATABASE_NAME}?useSSL=false
+    ports:
+      - '${SERVER_EXTERNAL_PORT}:${SERVER_EXTERNAL_PORT}'
+    expose:
+      - ${SERVER_EXTERNAL_PORT}
+    networks:
+      - app-networks
+    depends_on:
+      - db
+  db:
+    image: mysql:${DATABASE_VERSION}
+    restart: ${DOCKER_CONTAINER_BEHAVIOUR}
+    environment:
+      MYSQL_DATABASE: ${DATABASE_NAME}
+      MYSQL_USER: ${DATABASE_USER}
+      MYSQL_PASSWORD: ${DATABASE_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DATABASE_ROOT_PASSWORD}
+    ports:
+      - '${DATABASE_MAP_PORT}:${DATABASE_PORT}'
+    expose:
+      - '${DATABASE_EXTERNAL_PORT}'
+    volumes:
+      - easy-rancho-db:${DATABASE_VOLUME_PATH}
+    networks:
+      - app-networks
+
+volumes:
+  easy-rancho-db:
+
+networks:
+  app-networks:
+    driver: ${DOCKER_DRIVER}
