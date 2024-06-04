@@ -158,7 +158,7 @@ public class CoworkingController {
             response = errorJSONFactory
                     .setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .setSuccessful(false)
-                    .setMessage("flemis")
+                    .setMessage("Coworking not saved because because of an internal server error")
                     .setTimestamp(Date.from(Instant.now()).toString())
                     .getResponse();
 

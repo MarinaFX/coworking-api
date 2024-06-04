@@ -23,4 +23,7 @@ public interface Dao<T>{
 
     @Transactional
     void delete(T t);
+
+    @Transactional
+    Optional<T>findByNameAndAddress(String name, String address);
 }

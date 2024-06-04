@@ -8,17 +8,21 @@ import java.util.UUID;
 import static jakarta.persistence.GenerationType.TABLE;
 
 @Entity
-@Table(name = "WORKING_PLACE")
+@Table(name = "WORKING_PLACE", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"name", "address"})
+})
 public class WorkingPlace {
 
     @Id
-    //@GeneratedValue(strategy=TABLE, generator="CUST_GEN")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @Basic
+    @Column(unique = true)
     private String name;
 
     @Basic
+    @Column(unique = true)
     private String address;
 
     @Basic

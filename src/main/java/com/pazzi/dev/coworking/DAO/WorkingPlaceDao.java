@@ -2,6 +2,10 @@ package com.pazzi.dev.coworking.DAO;
 
 import com.pazzi.dev.coworking.Model.WorkingPlace;
 import jakarta.persistence.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -30,6 +34,19 @@ public class WorkingPlaceDao implements Dao<WorkingPlace> {
         return Optional.ofNullable(this.entityManager.find(WorkingPlace.class, id));
     }
 
+    @Transactional
+    public Optional<WorkingPlace> findByNameAndAddress(String name, String address) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<WorkingPlace> query = cb.createQuery(WorkingPlace.class);
+        Root<WorkingPlace> root = query.from(WorkingPlace.class);
+
+        Predicate namePredicate = cb.equal(root.get("name"), name);
+        Predicate addressPredicate = cb.equal(root.get("address"), address);
+        query.where(cb.and(namePredicate, addressPredicate));
+
+        return entityManager.createQuery(query).getResultList().stream().findFirst();
+    }
+
     //@Override
     @Transactional
     public List<WorkingPlace> getAll() {
@@ -44,7 +61,7 @@ public class WorkingPlaceDao implements Dao<WorkingPlace> {
             IllegalArgumentException,
             TransactionRequiredException
     {
-        entityManager.merge(workingPlace);
+        entityManager.persist(workingPlace);
     }
 
     //@Override

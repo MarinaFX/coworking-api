@@ -45,7 +45,14 @@ public class CoworkingService implements Service {
             throws EntityExistsException,
             IllegalArgumentException,
             TransactionRequiredException   {
-        this.workingPlaceDao.save(coworking);
+        Optional<WorkingPlace> result = this.workingPlaceDao
+                .findByNameAndAddress(coworking.getName(), coworking.getAddress());
+
+        if (result.isPresent()) {
+            throw new EntityExistsException();
+        }else {
+            this.workingPlaceDao.save(coworking);
+        }
     }
 
     @Override
