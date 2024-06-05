@@ -8,8 +8,7 @@ import com.pazzi.dev.coworking.Controller.JSON.Responses.SuccessfulJSONResponse;
 import com.pazzi.dev.coworking.Exceptions.CoworkingNotFoundException;
 import com.pazzi.dev.coworking.Model.WorkingPlace;
 import com.pazzi.dev.coworking.Service.CoworkingService;
-import jakarta.persistence.EntityExistsException;
-import jakarta.persistence.TransactionRequiredException;
+import jakarta.persistence.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -82,27 +82,75 @@ public class CoworkingController {
         }
     }
 
-//    @GetMapping(value = "/getAll")
-//    public ResponseEntity<JSONResponse<List<WorkingPlace>>> getAll() {
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.add("Content-Type", "application/json");
-//
-//        List<WorkingPlace> result = service.getAllPlaces();
-//
-//        JSONResponse<List<WorkingPlace>> response = new JSONResponse<>();
-//
-//        if(!result.isEmpty()) {
-//
-//            response.setData(result);
-//
-//            return new ResponseEntity<>(response, headers, HttpStatus.OK);
-//        }
-//        else {
-//            response.setMessage(null);
-//
-//            return new ResponseEntity<>(response, headers, HttpStatus.OK);
-//        }
-//    }
+    @GetMapping(value = "/coworking/all")
+    public ResponseEntity<JSONResponse> getAll() {
+        List<WorkingPlace> result = service.getAllPlaces();
+
+        try {
+            SuccessfulJSONResponse response = successfulJSONFactory.create().getResponse();
+
+            response = successfulJSONFactory.setData(result)
+                    .setTimestamp(Date.from(Instant.now()).toString())
+                    .getResponse();
+
+            return new ResponseEntity<>(response, this.createJsonHeaders(), HttpStatus.OK);
+        } catch(IllegalArgumentException e) {
+            ErrorJSONResponse response = errorJSONFactory.create().getResponse();
+
+            response = errorJSONFactory
+                    .setStatusCode(HttpStatus.BAD_REQUEST.value())
+                    .setSuccessful(false)
+                    .setMessage("There is something wrong with the request. " + e.getMessage())
+                    .setTimestamp(Date.from(Instant.now()).toString())
+                    .getResponse();
+
+            return new ResponseEntity<>(response, this.createJsonHeaders(), HttpStatus.BAD_REQUEST);
+        } catch (IllegalStateException f) {
+            ErrorJSONResponse response = errorJSONFactory.create().getResponse();
+
+            response = errorJSONFactory
+                    .setStatusCode(HttpStatus.CONFLICT.value())
+                    .setSuccessful(false)
+                    .setMessage("Could not fetch all coworkings due to an internal server error.")
+                    .setTimestamp(Date.from(Instant.now()).toString())
+                    .getResponse();
+
+            return new ResponseEntity<>(response, this.createJsonHeaders(), HttpStatus.CONFLICT);
+        } catch (QueryTimeoutException g) {
+            ErrorJSONResponse response = errorJSONFactory.create().getResponse();
+
+            response = errorJSONFactory
+                    .setStatusCode(HttpStatus.REQUEST_TIMEOUT.value())
+                    .setSuccessful(false)
+                    .setMessage("Query timeout.")
+                    .setTimestamp(Date.from(Instant.now()).toString())
+                    .getResponse();
+
+            return new ResponseEntity<>(response, this.createJsonHeaders(), HttpStatus.REQUEST_TIMEOUT);
+        } catch (TransactionRequiredException z) {
+            ErrorJSONResponse response = errorJSONFactory.create().getResponse();
+
+            response = errorJSONFactory
+                    .setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .setSuccessful(false)
+                    .setMessage("The transaction is not active to perform action.")
+                    .setTimestamp(Date.from(Instant.now()).toString())
+                    .getResponse();
+
+            return new ResponseEntity<>(response, this.createJsonHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (PessimisticLockException | LockTimeoutException x) {
+            ErrorJSONResponse response = errorJSONFactory.create().getResponse();
+
+            response = errorJSONFactory
+                    .setStatusCode(HttpStatus.CONFLICT.value())
+                    .setSuccessful(false)
+                    .setMessage("Pessimistic locking conflict occurred.")
+                    .setTimestamp(Date.from(Instant.now()).toString())
+                    .getResponse();
+
+            return new ResponseEntity<>(response, this.createJsonHeaders(), HttpStatus.CONFLICT);
+        }
+    }
 
     // POST Mappings
 

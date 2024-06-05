@@ -4,9 +4,7 @@ import com.pazzi.dev.coworking.DAO.Dao;
 import com.pazzi.dev.coworking.DAO.WorkingPlaceDao;
 import com.pazzi.dev.coworking.Exceptions.CoworkingNotFoundException;
 import com.pazzi.dev.coworking.Model.WorkingPlace;
-import jakarta.persistence.EntityExistsException;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.TransactionRequiredException;
+import jakarta.persistence.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +54,9 @@ public class CoworkingService implements Service {
     }
 
     @Override
-    public List<WorkingPlace> getAllPlaces() {
+    public List<WorkingPlace> getAllPlaces() throws IllegalArgumentException,
+            IllegalStateException, QueryTimeoutException,
+            TransactionRequiredException, PessimisticLockException, LockTimeoutException {
         return this.workingPlaceDao.getAll();
     }
 
