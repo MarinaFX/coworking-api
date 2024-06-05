@@ -141,6 +141,9 @@ fabric.properties
 hs_err_pid*
 replay_pid*
 
+### Application Properties ###
+src/main/resources/application.properties
+
 ### Gradle ###
 .gradle
 **/build/
