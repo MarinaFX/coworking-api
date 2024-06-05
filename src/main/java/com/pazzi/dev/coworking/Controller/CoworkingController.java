@@ -9,6 +9,7 @@ import com.pazzi.dev.coworking.Exceptions.CoworkingNotFoundException;
 import com.pazzi.dev.coworking.Model.WorkingPlace;
 import com.pazzi.dev.coworking.Service.CoworkingService;
 import jakarta.persistence.*;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -214,6 +215,55 @@ public class CoworkingController {
         }
     }
 
+    //DELETE Mappings
+
+    @DeleteMapping(value = "/coworking/delete/{id}")
+    public ResponseEntity<JSONResponse> deleteCoworking(@PathVariable UUID id) {
+        try {
+            WorkingPlace result = this.service.deleteCoworking(id);
+
+            SuccessfulJSONResponse response = successfulJSONFactory.create().getResponse();
+
+            response = successfulJSONFactory.setData(result)
+                    .setTimestamp(Date.from(Instant.now()).toString())
+                    .getResponse();
+
+            return new ResponseEntity<>(response, this.createJsonHeaders(), HttpStatus.OK);
+        } catch (CoworkingNotFoundException f) {
+            ErrorJSONResponse response = errorJSONFactory.create().getResponse();
+
+            response = errorJSONFactory
+                    .setStatusCode(HttpStatus.NOT_FOUND.value())
+                    .setSuccessful(false)
+                    .setMessage("Coworking not deleted because because there is no coworking with the given id.")
+                    .setTimestamp(Date.from(Instant.now()).toString())
+                    .getResponse();
+
+            return new ResponseEntity<>(response, this.createJsonHeaders(), HttpStatus.NOT_FOUND);
+        } catch (IllegalArgumentException e) {
+            ErrorJSONResponse response = errorJSONFactory.create().getResponse();
+
+            response = errorJSONFactory
+                    .setStatusCode(HttpStatus.BAD_REQUEST.value())
+                    .setSuccessful(false)
+                    .setMessage("Coworking not saved because the given body does not match a valid coworking.")
+                    .setTimestamp(Date.from(Instant.now()).toString())
+                    .getResponse();
+
+            return new ResponseEntity<>(response, this.createJsonHeaders(), HttpStatus.BAD_REQUEST);
+        } catch (TransactionRequiredException s) {
+            ErrorJSONResponse response = errorJSONFactory.create().getResponse();
+
+            response = errorJSONFactory
+                    .setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .setSuccessful(false)
+                    .setMessage("The transaction is not active to perform action.")
+                    .setTimestamp(Date.from(Instant.now()).toString())
+                    .getResponse();
+
+            return new ResponseEntity<>(response, this.createJsonHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
     private HttpHeaders createJsonHeaders() {
         HttpHeaders headers = new HttpHeaders();

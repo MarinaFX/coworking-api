@@ -60,6 +60,13 @@ public class CoworkingService implements Service {
         return this.workingPlaceDao.getAll();
     }
 
+    @Transactional
+    public WorkingPlace deleteCoworking(UUID id) throws CoworkingNotFoundException {
+        WorkingPlace result = this.fetchBy(id);
+        this.workingPlaceDao.delete(result);
+        return result;
+    }
+
     @Override
     public WorkingPlace getPlaceBy(String name) {
         return null;

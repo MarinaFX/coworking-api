@@ -49,9 +49,11 @@ public class WorkingPlaceDao implements Dao<WorkingPlace> {
 
     //@Override
     @Transactional
-    public List<WorkingPlace> getAll() throws IllegalArgumentException,
+    public List<WorkingPlace> getAll()
+            throws IllegalArgumentException,
             IllegalStateException, QueryTimeoutException,
-            TransactionRequiredException, PessimisticLockException, LockTimeoutException {
+            TransactionRequiredException, PessimisticLockException, LockTimeoutException
+    {
         Query query = entityManager.createQuery("SELECT e FROM WorkingPlace e");
         return query.getResultList();
     }
@@ -74,8 +76,11 @@ public class WorkingPlaceDao implements Dao<WorkingPlace> {
 
     //@Override
     @Transactional
-    public void delete(WorkingPlace workingPlace) {
-        this.executeInsideTransaction(entityManager1 -> entityManager.remove(workingPlace));
+    public void delete(WorkingPlace workingPlace)
+            throws IllegalArgumentException,
+            TransactionRequiredException
+    {
+        entityManager.remove(workingPlace);
     }
 
     @Transactional
