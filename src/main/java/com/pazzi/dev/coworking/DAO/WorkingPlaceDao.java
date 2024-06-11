@@ -70,8 +70,10 @@ public class WorkingPlaceDao implements Dao<WorkingPlace> {
 
     //@Override
     @Transactional
-    public void update(WorkingPlace workingPlace, String[] params) {
-
+    public void update(WorkingPlace workingPlace)
+            throws IllegalArgumentException,
+            TransactionRequiredException {
+        entityManager.merge(workingPlace);
     }
 
     //@Override

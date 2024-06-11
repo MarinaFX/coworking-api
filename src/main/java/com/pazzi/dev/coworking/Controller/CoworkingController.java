@@ -42,7 +42,7 @@ public class CoworkingController {
 
     @GetMapping(value = "/")
     public String getTest() {
-        return "Hello World";
+        return "Hello World! :)";
     }
 
     @GetMapping("/coworking/{id}")
@@ -75,7 +75,7 @@ public class CoworkingController {
             response = errorJSONFactory
                     .setStatusCode(HttpStatus.BAD_REQUEST.value())
                     .setSuccessful(false)
-                    .setMessage("The ID provided is not valid. Please, make sure its an UUID")
+                    .setMessage("The ID provided is not valid. Please, make sure its an UUID. Error: " + e.getMessage())
                     .setTimestamp(Date.from(Instant.now()).toString())
                     .getResponse();
 
@@ -112,7 +112,7 @@ public class CoworkingController {
             response = errorJSONFactory
                     .setStatusCode(HttpStatus.CONFLICT.value())
                     .setSuccessful(false)
-                    .setMessage("Could not fetch all coworkings due to an internal server error.")
+                    .setMessage("Could not fetch all coworkings due to an internal server error. Error: " + f.getMessage())
                     .setTimestamp(Date.from(Instant.now()).toString())
                     .getResponse();
 
@@ -123,7 +123,7 @@ public class CoworkingController {
             response = errorJSONFactory
                     .setStatusCode(HttpStatus.REQUEST_TIMEOUT.value())
                     .setSuccessful(false)
-                    .setMessage("Query timeout.")
+                    .setMessage("Query timeout. Error: " + g.getMessage())
                     .setTimestamp(Date.from(Instant.now()).toString())
                     .getResponse();
 
@@ -134,7 +134,7 @@ public class CoworkingController {
             response = errorJSONFactory
                     .setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .setSuccessful(false)
-                    .setMessage("The transaction is not active to perform action.")
+                    .setMessage("The transaction is not active to perform action. Error: " + z.getMessage())
                     .setTimestamp(Date.from(Instant.now()).toString())
                     .getResponse();
 
@@ -145,7 +145,7 @@ public class CoworkingController {
             response = errorJSONFactory
                     .setStatusCode(HttpStatus.CONFLICT.value())
                     .setSuccessful(false)
-                    .setMessage("Pessimistic locking conflict occurred.")
+                    .setMessage("Pessimistic locking conflict occurred. Error: " + x.getMessage())
                     .setTimestamp(Date.from(Instant.now()).toString())
                     .getResponse();
 
@@ -154,7 +154,6 @@ public class CoworkingController {
     }
 
     // POST Mappings
-
 
     @PostMapping("/coworking")
     public ResponseEntity<JSONResponse> saveCoworking(@RequestBody WorkingPlace coworking) {
@@ -174,7 +173,7 @@ public class CoworkingController {
             response = errorJSONFactory
                     .setStatusCode(HttpStatus.CONFLICT.value())
                     .setSuccessful(false)
-                    .setMessage("Coworking not saved because it already exists in the database.")
+                    .setMessage("Coworking not saved because it already exists in the database. Error: " + e.getMessage())
                     .setTimestamp(Date.from(Instant.now()).toString())
                     .getResponse();
 
@@ -185,7 +184,7 @@ public class CoworkingController {
             response = errorJSONFactory
                     .setStatusCode(HttpStatus.BAD_REQUEST.value())
                     .setSuccessful(false)
-                    .setMessage("Coworking not saved because the given body does not match a valid coworking.")
+                    .setMessage("Coworking not saved because the given body does not match a valid coworking. Error: " + f.getMessage())
                     .setTimestamp(Date.from(Instant.now()).toString())
                     .getResponse();
 
@@ -196,7 +195,7 @@ public class CoworkingController {
             response = errorJSONFactory
                     .setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .setSuccessful(false)
-                    .setMessage("Coworking not saved because no transaction was given.")
+                    .setMessage("Coworking not saved because no transaction was given. Error: " + r.getMessage())
                     .setTimestamp(Date.from(Instant.now()).toString())
                     .getResponse();
 
@@ -207,7 +206,70 @@ public class CoworkingController {
             response = errorJSONFactory
                     .setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .setSuccessful(false)
-                    .setMessage("Coworking not saved because because of an internal server error")
+                    .setMessage("Coworking not saved because because of an internal server error. Error: " + t.getMessage())
+                    .setTimestamp(Date.from(Instant.now()).toString())
+                    .getResponse();
+
+            return new ResponseEntity<>(response, this.createJsonHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    //PATCH Mappings
+
+    @PatchMapping(value = "/coworking/update")
+    public ResponseEntity<JSONResponse> patchCoworking(@RequestBody WorkingPlace coworking) {
+        try {
+            WorkingPlace result = this.service.updateCoworking(coworking);
+
+            SuccessfulJSONResponse response = successfulJSONFactory.create().getResponse();
+
+            response = successfulJSONFactory.setData(result)
+                    .setTimestamp(Date.from(Instant.now()).toString())
+                    .getResponse();
+
+            return new ResponseEntity<>(response, this.createJsonHeaders(), HttpStatus.OK);
+        } catch (CoworkingNotFoundException n) {
+            ErrorJSONResponse response = errorJSONFactory.create().getResponse();
+
+            response = errorJSONFactory
+                    .setStatusCode(HttpStatus.NOT_FOUND.value())
+                    .setSuccessful(false)
+                    .setMessage("There was no coworking found with the given ID")
+                    .setTimestamp(Date.from(Instant.now()).toString())
+                    .getResponse();
+
+            return new ResponseEntity<>(response, this.createJsonHeaders(), HttpStatus.NOT_FOUND);
+        } catch (IllegalArgumentException f) {
+            ErrorJSONResponse response = errorJSONFactory.create().getResponse();
+
+            response = errorJSONFactory
+                    .setStatusCode(HttpStatus.BAD_REQUEST.value())
+                    .setSuccessful(false)
+                    .setMessage("Coworking not updated because the given body does not match a valid coworking. Error: " + f.getMessage())
+                    .setTimestamp(Date.from(Instant.now()).toString())
+                    .getResponse();
+
+            return new ResponseEntity<>(response, this.createJsonHeaders(), HttpStatus.BAD_REQUEST);
+        } catch (TransactionRequiredException r) {
+            ErrorJSONResponse response = errorJSONFactory.create().getResponse();
+
+            response = errorJSONFactory
+                    .setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .setSuccessful(false)
+                    .setMessage("Coworking not updated because no transaction was given. Error: " + r.getMessage())
+                    .setTimestamp(Date.from(Instant.now()).toString())
+                    .getResponse();
+
+            return new ResponseEntity<>(response, this.createJsonHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (RuntimeException t) {
+
+
+            ErrorJSONResponse response = errorJSONFactory.create().getResponse();
+
+            response = errorJSONFactory
+                    .setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .setSuccessful(false)
+                    .setMessage("Coworking not updated because because of an internal server error. Error: " + t.getMessage())
                     .setTimestamp(Date.from(Instant.now()).toString())
                     .getResponse();
 
@@ -246,7 +308,7 @@ public class CoworkingController {
             response = errorJSONFactory
                     .setStatusCode(HttpStatus.BAD_REQUEST.value())
                     .setSuccessful(false)
-                    .setMessage("Coworking not saved because the given body does not match a valid coworking.")
+                    .setMessage("Coworking not saved because the given body does not match a valid coworking. Error: " + e.getMessage())
                     .setTimestamp(Date.from(Instant.now()).toString())
                     .getResponse();
 
@@ -257,7 +319,7 @@ public class CoworkingController {
             response = errorJSONFactory
                     .setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .setSuccessful(false)
-                    .setMessage("The transaction is not active to perform action.")
+                    .setMessage("The transaction is not active to perform action. Error: " + s.getMessage())
                     .setTimestamp(Date.from(Instant.now()).toString())
                     .getResponse();
 

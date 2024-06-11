@@ -30,8 +30,10 @@ public class CoworkingService implements Service {
     }
 
     public WorkingPlace fetchBy(UUID id) {
-        if (this.workingPlaceDao.fetchBy(id).isPresent()) {
-            return this.workingPlaceDao.fetchBy(id).get();
+        Optional<WorkingPlace> result = this.workingPlaceDao.fetchBy(id);
+
+        if (result.isPresent()) {
+            return result.get();
         }
         else{
             throw new CoworkingNotFoundException();
@@ -43,6 +45,7 @@ public class CoworkingService implements Service {
             throws EntityExistsException,
             IllegalArgumentException,
             TransactionRequiredException   {
+
         Optional<WorkingPlace> result = this.workingPlaceDao
                 .findByNameAndAddress(coworking.getName(), coworking.getAddress());
 
@@ -65,6 +68,17 @@ public class CoworkingService implements Service {
         WorkingPlace result = this.fetchBy(id);
         this.workingPlaceDao.delete(result);
         return result;
+    }
+
+    @Transactional
+    public WorkingPlace updateCoworking(WorkingPlace newCoworking)
+            throws IllegalArgumentException,
+            TransactionRequiredException,
+            CoworkingNotFoundException
+    {
+        WorkingPlace result = this.fetchBy(newCoworking.getId());
+        this.workingPlaceDao.update(newCoworking);
+        return newCoworking;
     }
 
     @Override

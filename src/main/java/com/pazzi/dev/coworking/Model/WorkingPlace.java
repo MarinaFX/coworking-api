@@ -9,7 +9,7 @@ import static jakarta.persistence.GenerationType.TABLE;
 
 @Entity
 @Table(name = "WORKING_PLACE", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"name", "address"})
+        @UniqueConstraint(name = "UK_PER_ADDRESS",columnNames = { "address" })
 })
 public class WorkingPlace {
 
@@ -18,11 +18,10 @@ public class WorkingPlace {
     private UUID id;
 
     @Basic
-    @Column(unique = true)
     private String name;
 
     @Basic
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String address;
 
     @Basic
